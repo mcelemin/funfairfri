@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📸 Photo Booth Challenge</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0a2e0a, #1a4a1a, #0d1f3c); min-height: 100vh; display: flex; align-items: center; justify-content: center; color: white; }
+  .container { width: 100%; max-width: 700px; padding: 20px; }
+  .card { background: rgba(255,255,255,0.06); border-radius: 16px; padding: 30px; border: 1px solid rgba(255,255,255,0.1); }
+  h1 { text-align: center; font-size: 28px; }
+  .subtitle { text-align: center; color: #2dc653; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 25px; }
+
+  /* Prompt card */
+  .prompt-card { background: linear-gradient(135deg, rgba(45,198,83,0.15), rgba(45,198,83,0.05)); border: 2px solid rgba(45,198,83,0.3); border-radius: 16px; padding: 30px; text-align: center; margin-bottom: 25px; position: relative; overflow: hidden; }
+  .prompt-card::before { content: '📸'; position: absolute; top: -10px; right: -10px; font-size: 80px; opacity: 0.1; }
+  .prompt-label { font-size: 11px; color: #2dc653; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-bottom: 10px; }
+  .prompt-text { font-size: 22px; font-weight: 700; line-height: 1.5; margin-bottom: 15px; }
+  .prompt-rules { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.7; }
+
+  /* Spin prompt button */
+  .spin-prompt { display: inline-block; background: #2dc653; color: #0a2e0a; border: none; padding: 10px 24px; border-radius: 25px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+  .spin-prompt:hover { transform: scale(1.05); }
+  .spin-prompt:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+  /* Upload area */
+  .upload-zone { border: 3px dashed rgba(45,198,83,0.3); border-radius: 16px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 20px; }
+  .upload-zone:hover { border-color: #2dc653; background: rgba(45,198,83,0.05); }
+  .upload-zone.has-file { border-color: #2dc653; border-style: solid; background: rgba(45,198,83,0.1); }
+  .upload-icon { font-size: 48px; margin-bottom: 10px; }
+  .upload-text { font-size: 14px; color: rgba(255,255,255,0.6); }
+  .upload-preview { max-width: 100%; max-height: 300px; border-radius: 10px; margin-top: 15px; display: none; }
+
+  /* Caption */
+  .caption-input { width: 100%; padding: 12px 16px; border-radius: 10px; border: 2px solid rgba(45,198,83,0.2); background: rgba(255,255,255,0.05); color: white; font-size: 14px; font-family: inherit; margin-bottom: 20px; }
+  .caption-input::placeholder { color: rgba(255,255,255,0.3); }
+
+  /* Scoring criteria */
+  .criteria { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px; }
+  .criteria-item { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 14px; text-align: center; border: 1px solid rgba(255,255,255,0.06); }
+  .criteria-icon { font-size: 24px; margin-bottom: 6px; }
+  .criteria-label { font-size: 12px; font-weight: 700; color: #ffd700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .criteria-desc { font-size: 11px; color: rgba(255,255,255,0.5); line-height: 1.4; }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .btn { display: block; margin: 20px auto 0; background: #2dc653; color: #0a2e0a; border: none; padding: 14px 40px; border-radius: 30px; font-size: 16px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+  .btn:hover { transform: scale(1.05); }
+  .btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+  .form-group { margin-bottom: 12px; }
+  .form-group label { display: block; font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+  .form-group input { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: white; font-size: 14px; }
+
+  .confetti { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 100; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- START -->
+  <div class="screen active" id="startScreen">
+    <div class="card">
+      <h1>📸 Photo Booth Challenge</h1>
+      <div class="subtitle">Friday Challenge</div>
+      <div style="text-align:center; font-size:50px; margin:15px 0;">🎭</div>
+      <div style="text-align:center; line-height:1.8; color:rgba(255,255,255,0.8); font-size:15px;">
+        Get your <b style="color:#2dc653;">creative hat</b> on! 🎨<br><br>
+        1️⃣ Spin to get your <b>random photo prompt</b><br>
+        2️⃣ Take a photo (selfie, team, desk — get creative!)<br>
+        3️⃣ Add a funny caption<br>
+        4️⃣ Submit before midnight!<br><br>
+        <span style="font-size:13px; color:rgba(255,255,255,0.5);">🏆 Judged on: Creativity · Humour · Effort<br>Winners announced Monday!</span>
+      </div>
+      <button class="btn" onclick="startGame()">🎲 GET MY PROMPT!</button>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="gameScreen">
+    <div class="card">
+      <div style="text-align:center;">
+        <button class="spin-prompt" id="rerollBtn" onclick="rerollPrompt()">🎲 RE-ROLL PROMPT (1 re-roll allowed)</button>
+      </div>
+
+      <div class="prompt-card">
+        <div class="prompt-label">Your Photo Challenge</div>
+        <div class="prompt-text" id="promptText"></div>
+        <div class="prompt-rules" id="promptRules"></div>
+      </div>
+
+      <div class="criteria">
+        <div class="criteria-item">
+          <div class="criteria-icon">🎨</div>
+          <div class="criteria-label">Creativity</div>
+          <div class="criteria-desc">How original is your interpretation?</div>
+        </div>
+        <div class="criteria-item">
+          <div class="criteria-icon">😂</div>
+          <div class="criteria-label">Humour</div>
+          <div class="criteria-desc">Did it make us laugh?</div>
+        </div>
+        <div class="criteria-item">
+          <div class="criteria-icon">💪</div>
+          <div class="criteria-label">Effort</div>
+          <div class="criteria-desc">Props, costumes, teamwork?</div>
+        </div>
+      </div>
+
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon" id="uploadIcon">📤</div>
+        <div class="upload-text" id="uploadText">Click to upload your photo<br><span style="font-size:12px; color:rgba(255,255,255,0.3);">JPG, PNG — max 10MB</span></div>
+        <img class="upload-preview" id="preview">
+        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleUpload(this)">
+      </div>
+
+      <input class="caption-input" type="text" id="captionInput" placeholder="✏️ Add a funny caption..." maxlength="150">
+      <div style="text-align:right; font-size:11px; color:rgba(255,255,255,0.3); margin-top:-15px; margin-bottom:15px;">
+        <span id="charCount">0</span>/150
+      </div>
+
+      <div class="form-group">
+        <label>Your Alias (Login)</label>
+        <input type="text" id="aliasInput" placeholder="e.g. johndoe">
+      </div>
+
+      <button class="btn" id="submitBtn" onclick="submitEntry()" disabled>📸 SUBMIT ENTRY</button>
+      <div id="submitMsg" style="text-align:center; margin-top:12px; font-size:13px; display:none;"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const prompts = [
+  { text: "🦸 Recreate a famous movie scene using only office supplies!", rules: "Must include at least 2 'props' from your desk. Bonus points for recognisability!" },
+  { text: "🐾 Show us your best 'animal impression' at your desk!", rules: "Strike a pose as any animal. Caption must include the animal name. Team entries welcome!" },
+  { text: "🎭 'Before Coffee vs After Coffee' — show us the transformation!", rules: "Side-by-side or split photo. The more dramatic the better!" },
+  { text: "🏆 Create a 'trophy' from items on your desk and pose with it!", rules: "Build something creative. Name your trophy. Strike a victory pose!" },
+  { text: "📰 Create a fake newspaper headline about your team and pose for the cover photo!", rules: "Write the headline on paper/screen. Photo must match the headline energy!" },
+  { text: "🎤 Recreate a famous album cover using your workspace!", rules: "Any music genre. Props encouraged. Must be recognisable!" },
+  { text: "🧑‍🚀 'My desk, but make it SPACE' — transform your workspace into a spaceship!", rules: "Use whatever you have. Label your 'controls'. Wear your 'helmet'!" },
+  { text: "🎬 Freeze-frame: Show us the most dramatic moment of your work day!", rules: "Action shot! Caption must describe what's happening. Extra points for team participation!" }
+];
+
+let currentPrompt = null, rerolls = 1, hasFile = false;
+
+document.getElementById('captionInput').addEventListener('input', function() {
+  document.getElementById('charCount').textContent = this.value.length;
+  checkSubmit();
+});
+
+function startGame() {
+  pickPrompt();
+  showScreen('gameScreen');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function pickPrompt() {
+  currentPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+  document.getElementById('promptText').textContent = currentPrompt.text;
+  document.getElementById('promptRules').textContent = currentPrompt.rules;
+}
+
+function rerollPrompt() {
+  if (rerolls <= 0) return;
+  rerolls--;
+  pickPrompt();
+  const btn = document.getElementById('rerollBtn');
+  btn.textContent = '🎲 No re-rolls left';
+  btn.disabled = true;
+}
+
+function handleUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { alert('File too large! Max 10MB.'); return; }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const preview = document.getElementById('preview');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+    document.getElementById('uploadIcon').textContent = '✅';
+    document.getElementById('uploadText').textContent = file.name;
+    document.getElementById('uploadZone').classList.add('has-file');
+    hasFile = true;
+    checkSubmit();
+  };
+  reader.readAsDataURL(file);
+}
+
+function checkSubmit() {
+  const alias = document.getElementById('aliasInput').value.trim();
+  document.getElementById('submitBtn').disabled = !hasFile;
+}
+
+function submitEntry() {
+  const alias = document.getElementById('aliasInput').value.trim();
+  if (!alias) { alert('Please enter your alias!'); return; }
+  if (!hasFile) { alert('Please upload a photo!'); return; }
+
+  const caption = document.getElementById('captionInput').value.trim();
+
+  const subject = encodeURIComponent('📸 Photo Booth Challenge — ' + alias);
+  const body = encodeURIComponent(
+    '📸 PHOTO BOOTH CHALLENGE — SUBMISSION\n' +
+    '================================\n\n' +
+    'Alias: ' + alias + '\n' +
+    'Prompt: ' + currentPrompt.text + '\n' +
+    'Caption: ' + (caption || '(none)') + '\n\n' +
+    '⚠️ IMPORTANT: Please attach your photo to this email before sending!\n'
+  );
+
+  window.open('mailto:mcelemin@amazon.es?subject=' + subject + '&body=' + body, '_self');
+
+  const msg = document.getElementById('submitMsg');
+  msg.style.display = 'block';
+  msg.style.color = '#2dc653';
+  msg.innerHTML = '🎉 Email opened! <b>Attach your photo</b> to the email and send it.';
+
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('submitBtn').textContent = '✅ SUBMITTED!';
+  launchConfetti();
+}
+
+function launchConfetti() {
+  const container = document.createElement('div');
+  container.className = 'confetti';
+  document.body.appendChild(container);
+  const emojis = ['🎉','🎊','⭐','🌟','📸','🏆','✨'];
+  for (let i = 0; i < 40; i++) {
+    const span = document.createElement('span');
+    span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    span.style.cssText = `position:absolute;left:${Math.random()*100}%;top:-20px;font-size:${16+Math.random()*20}px;animation:fall ${2+Math.random()*3}s linear forwards;`;
+    container.appendChild(span);
+  }
+  const style = document.createElement('style');
+  style.textContent = '@keyframes fall{to{top:110%;transform:rotate(720deg);opacity:0;}}';
+  document.head.appendChild(style);
+  setTimeout(() => container.remove(), 5000);
+}
+</script>
+</body>
+</html>
